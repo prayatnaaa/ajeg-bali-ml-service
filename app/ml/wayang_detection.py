@@ -1,20 +1,9 @@
 import numpy as np
 import tensorflow as tf
 from starlette.datastructures import UploadFile
+from app.helpers.load_image import load_image_from_upload
 
 from app.ml.loader import wayang_model
-
-
-def load_image_from_upload(image_file: UploadFile) -> tf.Tensor:
-    image_bytes = image_file.file.read()
-    image_file.file.seek(0)
-
-    if not image_bytes:
-        raise ValueError("Received an empty image upload")
-
-    image = tf.io.decode_image(image_bytes, channels=3, expand_animations=False)
-    return image
-
 
 def predict_wayang(image):
     if isinstance(image, UploadFile):
