@@ -1,23 +1,65 @@
-from app.ml.loader import wayang_model
+import numpy as np
 import tensorflow as tf
+from starlette.datastructures import UploadFile
+
+from app.ml.loader import wayang_model
+
+
+def load_image_from_upload(image_file: UploadFile) -> tf.Tensor:
+    image_bytes = image_file.file.read()
+    image_file.file.seek(0)
+
+    if not image_bytes:
+        raise ValueError("Received an empty image upload")
+
+    image = tf.io.decode_image(image_bytes, channels=3, expand_animations=False)
+    return image
+
 
 def predict_wayang(image):
+    if isinstance(image, UploadFile):
+        image = load_image_from_upload(image)
+
     input_details = wayang_model.get_input_details()
     output_details = wayang_model.get_output_details()
 
-    # Preprocess the image
-    image = tf.image.resize(image, (224, 224))
+    image = tf.image.resize(image, (640, 640))
     image = tf.expand_dims(image, axis=0)
     image = tf.cast(image, tf.float32) / 255.0
 
-    # Set the input tensor
     wayang_model.set_tensor(input_details[0]['index'], image)
-
-    # Run inference
     wayang_model.invoke()
 
-    # Get the output tensor
     output_data = wayang_model.get_tensor(output_details[0]['index'])
-    prediction = tf.nn.softmax(output_data[0])
+    raw_output = np.asarray(output_data[0]).T
 
-    return prediction
+    if raw_output.shape[1] < 5:
+        raise ValueError(f"Unexpected model output shape: {raw_output.shape}")
+
+    boxes = raw_output[:, :4]
+    class_scores = raw_output[:, 4:]
+    class_ids = np.argmax(class_scores, axis=1)
+    scores = np.max(class_scores, axis=1)
+
+    mask = scores > 0.5
+    boxes = boxes[mask]
+    scores = scores[mask]
+    class_ids = class_ids[mask]
+
+    if len(scores) > 0:
+        selected = tf.image.non_max_suppression(
+            tf.convert_to_tensor(boxes, dtype=tf.float32),
+            tf.convert_to_tensor(scores, dtype=tf.float32),
+            max_output_size=min(20, len(scores)),
+            iou_threshold=0.5,
+            score_threshold=0.5,
+        )
+        boxes = boxes[selected.numpy()]
+        scores = scores[selected.numpy()]
+        class_ids = class_ids[selected.numpy()]
+
+    return {
+        "boxes": boxes,
+        "scores": scores,
+        "class_ids": class_ids,
+    }

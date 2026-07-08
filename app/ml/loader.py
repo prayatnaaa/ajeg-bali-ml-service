@@ -1,12 +1,17 @@
+from pathlib import Path
+
 import tensorflow as tf
 
 
+BASE_DIR = Path(__file__).resolve().parents[1]
+MODEL_DIR = BASE_DIR.parent / "dis_models"
+
 wayang_model = tf.lite.Interpreter(
-    model_path="../../dis_models/model_wayang.tflite"
+    model_path=str(MODEL_DIR / "model_wayang.tflite")
 )
 wayang_model.allocate_tensors()
 
 ketupat_model = tf.lite.Interpreter(
-    model_path="../../dis_models/model_ketupat.tflite"
+    model_path=str(MODEL_DIR / "model_ketupat.tflite")
 )
 ketupat_model.allocate_tensors()
