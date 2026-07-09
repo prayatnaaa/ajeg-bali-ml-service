@@ -18,8 +18,6 @@ def predict_ketupat(image):
 
     image = tf.image.resize(image, (224, 224))
     image = tf.expand_dims(image, axis=0)
-    # image = tf.cast(image, tf.float32) / 255.0
-    image = (tf.cast(image, tf.float32) / 127.5) - 1.0
 
     ketupat_model.set_tensor(input_details[0]['index'], image)
     ketupat_model.invoke()
