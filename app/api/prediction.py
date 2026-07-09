@@ -1,7 +1,8 @@
 from fastapi import APIRouter, File, UploadFile, WebSocket, WebSocketDisconnect
 
 from app.helpers.load_image import decode_base64_image, load_image_from_bytes
-from app.services.wayang_detection_service import detect_wayang
+from app.services.wayang_service import detect_wayang
+from app.services.ketupat_service import classify_ketupat
 
 router = APIRouter()
 
@@ -12,11 +13,11 @@ async def detect_wayang_endpoint(file: UploadFile = File(...)):
     return result
 
 
-@router.post("/detect-ketupat")
+@router.post("/classify-ketupat")
 async def detect_ketupat_endpoint(file: UploadFile = File(...)):
-    from app.services.ketupat_detection_service import detect_ketupat
+    from app.services.ketupat_service import detect_ketupat
 
-    result = detect_ketupat(file)
+    result = classify_ketupat(file)
     return result
 
 

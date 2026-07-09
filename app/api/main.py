@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.detection import router
+from app.api.prediction import router
 
 app = FastAPI()
 
