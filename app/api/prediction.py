@@ -15,8 +15,6 @@ async def detect_wayang_endpoint(file: UploadFile = File(...)):
 
 @router.post("/classify-ketupat")
 async def detect_ketupat_endpoint(file: UploadFile = File(...)):
-    from app.services.ketupat_service import detect_ketupat
-
     result = classify_ketupat(file)
     return result
 
