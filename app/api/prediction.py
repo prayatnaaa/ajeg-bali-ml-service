@@ -1,21 +1,32 @@
 from fastapi import APIRouter, File, UploadFile, WebSocket, WebSocketDisconnect
 
 from app.helpers.load_image import decode_base64_image, load_image_from_bytes
+from app.services.jejahitan_service import classify_jejahitan
 from app.services.wayang_service import detect_wayang
 from app.services.ketupat_service import classify_ketupat
+from fastapi import Request
 
 router = APIRouter()
 
 
 @router.post("/detect-wayang")
-async def detect_wayang_endpoint(file: UploadFile = File(...)):
-    result = detect_wayang(file)
+async def detect_wayang_endpoint(request: Request, file: UploadFile = File(...)):
+    model_registry = request.app.state.model_registry
+    result = detect_wayang(file, model_registry)
     return result
 
 
 @router.post("/classify-ketupat")
-async def detect_ketupat_endpoint(file: UploadFile = File(...)):
-    result = classify_ketupat(file)
+async def detect_ketupat_endpoint(request: Request, file: UploadFile = File(...)):
+    model_registry = request.app.state.model_registry
+    result = classify_ketupat(file, model_registry)
+    return result
+
+
+@router.post("/classify-jejahitan")
+async def classify_jejahitan_endpoint(request: Request, file: UploadFile = File(...)):
+    model_registry = request.app.state.model_registry
+    result = classify_jejahitan(file, model_registry)
     return result
 
 

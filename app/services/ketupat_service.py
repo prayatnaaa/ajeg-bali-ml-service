@@ -1,5 +1,6 @@
 import numpy as np
-import app.ml.ketupat_classification as ketupat_classification
+from app.ml.ketupat_classification import predict_ketupat
+from app.ml.model_registry import ModelRegistry
 
 KETUPAT_CLASSES = [
     "Bagia",
@@ -17,8 +18,8 @@ KETUPAT_CLASSES = [
     "Taluh",
 ]
 
-def classify_ketupat(image):
-    classification_result = ketupat_classification.predict_ketupat(image)
+def classify_ketupat(image, model_registry: ModelRegistry):
+    classification_result = predict_ketupat(image, model_registry)
 
     if classification_result.get("type") == "classification":
         class_id = classification_result["class_id"]

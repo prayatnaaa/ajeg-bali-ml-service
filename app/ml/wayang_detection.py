@@ -1,25 +1,27 @@
 import numpy as np
-import tensorflow as tf
 from starlette.datastructures import UploadFile
 from app.helpers.load_image import load_image_from_upload
+from app.ml.model_registry import ModelRegistry
 
-from app.ml.loader import wayang_model
 
-def predict_wayang(image):
+def predict_wayang(image, model_registry: ModelRegistry):
+    import tensorflow as tf
+
     if isinstance(image, UploadFile):
         image = load_image_from_upload(image)
 
-    input_details = wayang_model.get_input_details()
-    output_details = wayang_model.get_output_details()
+    interpreter = model_registry.get_model("wayang_interpreter")
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
 
     image = tf.image.resize(image, (640, 640))
     image = tf.expand_dims(image, axis=0)
     image = tf.cast(image, tf.float32) / 255.0
 
-    wayang_model.set_tensor(input_details[0]['index'], image)
-    wayang_model.invoke()
+    interpreter.set_tensor(input_details[0]["index"], image)
+    interpreter.invoke()
 
-    output_data = wayang_model.get_tensor(output_details[0]['index'])
+    output_data = interpreter.get_tensor(output_details[0]["index"])
     raw_output = np.asarray(output_data[0]).T
 
     if raw_output.shape[1] < 5:

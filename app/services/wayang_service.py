@@ -1,8 +1,8 @@
 import logging
-
 import numpy as np
 
 from app.ml.wayang_detection import predict_wayang
+from app.ml.model_registry import ModelRegistry
 
 WAYANG_CLASSES = [
     "Acintya",
@@ -24,8 +24,8 @@ WAYANG_CLASSES = [
 ]
 
 
-def detect_wayang(image):
-    detection_result = predict_wayang(image)
+def detect_wayang(image, model_registry: ModelRegistry):
+    detection_result = predict_wayang(image, model_registry)
     scores = detection_result["scores"]
     class_ids = detection_result["class_ids"]
     boxes = detection_result["boxes"]

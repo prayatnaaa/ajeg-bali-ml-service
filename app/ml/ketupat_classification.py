@@ -1,34 +1,27 @@
 import numpy as np
-import tensorflow as tf
 from starlette.datastructures import UploadFile
-
 from app.helpers.load_image import load_image_from_upload
-from app.ml.loader import ketupat_model
+from app.ml.model_registry import ModelRegistry
 
 
-def predict_ketupat(image):
+def predict_ketupat(image, model_registry: ModelRegistry):
+    import tensorflow as tf
+
     if isinstance(image, UploadFile):
         image = load_image_from_upload(image)
 
-    input_details = ketupat_model.get_input_details()
-    output_details = ketupat_model.get_output_details()
-
-    print(f"Input details: {input_details}")
-    print(f"Output details: {output_details}")
+    interpreter = model_registry.get_model("ketupat_interpreter")
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
 
     image = tf.image.resize(image, (224, 224))
     image = tf.expand_dims(image, axis=0)
 
-    ketupat_model.set_tensor(input_details[0]['index'], image)
-    ketupat_model.invoke()
+    interpreter.set_tensor(input_details[0]["index"], image)
+    interpreter.invoke()
 
-    output_data = ketupat_model.get_tensor(output_details[0]['index'])
+    output_data = interpreter.get_tensor(output_details[0]["index"])
     raw_output = np.asarray(output_data[0])
-
-    print(f"Raw output shape: {raw_output.shape}")
-    print(f"Raw output: {raw_output}")
-    print("argmax", np.argmax(raw_output))
-    print("top scores", np.sort(raw_output)[-5:])
 
     if raw_output.ndim == 1 or (raw_output.ndim == 2 and min(raw_output.shape) == 1):
         class_scores = raw_output.flatten()
