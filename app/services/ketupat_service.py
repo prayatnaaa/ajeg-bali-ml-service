@@ -1,62 +1,29 @@
-import numpy as np
 from app.ml.ketupat_classification import predict_ketupat
 from app.ml.model_registry import ModelRegistry
-
-KETUPAT_CLASSES = [
-    "Bagia",
-    "Dampulan",
-    "Gatep",
-    "Gong",
-    "Kukur",
-    "Lepet",
-    "Lojor",
-    "Nasi",
-    "Sari",
-    "Sidakarya",
-    "Sidapurna",
-    "Sirikan",
-    "Taluh",
-]
 
 def classify_ketupat(image, model_registry: ModelRegistry):
     classification_result = predict_ketupat(image, model_registry)
 
-    if classification_result.get("type") == "classification":
-        class_id = classification_result["class_id"]
+    if classification_result.get("type") != "classification":
         return {
+            "error_message": "Something went wrong during ketupat classification",
+            "is_success": False,
+            "prediction_type": None,
+            "class_id": None,
+            "class_name": None,
+            "confidence": None,
+            "class_scores": None,
+            "detections": [],
+        }
+    class_id = classification_result["class_id"]
+
+    return {
             "error_message": None,
             "is_success": True,
             "prediction_type": "classification",
             "class_id": class_id,
-            "class_name": KETUPAT_CLASSES[class_id] if 0 <= class_id < len(KETUPAT_CLASSES) else None,
+            "class_name": classification_result["class_name"],
             "confidence": classification_result["confidence"],
             "class_scores": classification_result["class_scores"],
             "detections": [],
         }
-
-    scores = classification_result["scores"]
-    class_ids = classification_result["class_ids"]
-    boxes = classification_result["boxes"]
-
-    if len(scores) == 0:
-        return {
-            "error_message": "no detections found",
-            "is_success": False,
-            "detections": [],
-        }
-
-    detections = [
-        {
-            "class_id": int(class_ids[i]),
-            "confidence": float(scores[i]),
-            "box": boxes[i].tolist(),
-        }
-        for i in range(len(scores))
-    ]
-
-    return {
-        "error_message": None,
-        "is_success": True,
-        "prediction_type": "detection",
-        "detections": detections,
-    }

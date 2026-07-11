@@ -3,6 +3,26 @@ from starlette.datastructures import UploadFile
 from app.helpers.load_image import load_image_from_upload
 from app.ml.model_registry import ModelRegistry
 
+WAYANG_CLASSES = [
+    "Acintya",
+    "Arjuna",
+    "Bhatara Siwa",
+    "Bima",
+    "Delem",
+    "Durga",
+    "Duryodana",
+    "Krisna",
+    "Kunti",
+    "Madri",
+    "Merdah",
+    "Nakula-Sadewa",
+    "Sangut",
+    "Sengkuni",
+    "Tualen",
+    "Yudhistira",
+]
+
+
 
 def predict_wayang(image, model_registry: ModelRegistry):
     import tensorflow as tf
@@ -53,4 +73,10 @@ def predict_wayang(image, model_registry: ModelRegistry):
         "boxes": boxes,
         "scores": scores,
         "class_ids": class_ids,
+        "class_names": [
+            WAYANG_CLASSES[int(class_id)]
+            if 0 <= int(class_id) < len(WAYANG_CLASSES)
+            else None
+            for class_id in class_ids
+        ]
     }

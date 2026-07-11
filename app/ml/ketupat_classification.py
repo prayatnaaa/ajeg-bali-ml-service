@@ -3,6 +3,21 @@ from starlette.datastructures import UploadFile
 from app.helpers.load_image import load_image_from_upload
 from app.ml.model_registry import ModelRegistry
 
+KETUPAT_CLASSES = [
+    "Bagia",
+    "Dampulan",
+    "Gatep",
+    "Gong",
+    "Kukur",
+    "Lepet",
+    "Lojor",
+    "Nasi",
+    "Sari",
+    "Sidakarya",
+    "Sidapurna",
+    "Sirikan",
+    "Taluh",
+]
 
 def predict_ketupat(image, model_registry: ModelRegistry):
     import tensorflow as tf
@@ -31,6 +46,7 @@ def predict_ketupat(image, model_registry: ModelRegistry):
         return {
             "type": "classification",
             "class_id": class_id,
+            "class_name": KETUPAT_CLASSES[class_id] if 0 <= class_id < len(KETUPAT_CLASSES) else None,
             "confidence": confidence,
             "class_scores": class_scores.tolist(),
         }
