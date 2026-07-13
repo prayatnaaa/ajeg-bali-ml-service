@@ -33,6 +33,7 @@ async def classify_jejahitan_endpoint(request: Request, file: UploadFile = File(
 @router.websocket("/ws/detect-wayang")
 async def websocket_detect_wayang(websocket: WebSocket):
     await websocket.accept()
+    model_registry = websocket.app.state.model_registry
     try:
         while True:
             data = await websocket.receive_json()
@@ -49,7 +50,7 @@ async def websocket_detect_wayang(websocket: WebSocket):
                     image_bytes = bytes(image_payload)
 
                 image = load_image_from_bytes(image_bytes)
-                result = detect_wayang(image)
+                result = detect_wayang(image, model_registry)
                 await websocket.send_json({"result": result})
             except Exception as exc:
                 await websocket.send_json({"error": str(exc)})
