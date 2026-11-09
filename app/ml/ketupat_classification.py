@@ -2,8 +2,6 @@ import numpy as np
 from starlette.datastructures import UploadFile
 from app.helpers.load_image import load_image_from_upload
 from app.ml.model_registry import ModelRegistry
-from keras.applications.efficientnet_v2 import preprocess_input
-from keras.preprocessing.image import img_to_array
 
 KETUPAT_CLASSES = [
     "Bagia",
@@ -31,11 +29,9 @@ def predict_ketupat(image, model_registry: ModelRegistry):
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
 
-    # Resize first
     image = tf.image.resize(image, (224, 224))
     image = image.numpy().astype(np.float32)
 
-    # RGB → BGR
     image = image[:, :, [2, 1, 0]]
 
     image = np.expand_dims(image, axis=0)
