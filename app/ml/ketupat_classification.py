@@ -30,7 +30,11 @@ def predict_ketupat(image, model_registry: ModelRegistry):
     output_details = interpreter.get_output_details()
 
     image = tf.image.resize(image, (224, 224))
-    image = tf.expand_dims(image, axis=0)
+    image = image.numpy().astype(np.float32)
+
+    image = image[:, :, [2, 1, 0]]
+
+    image = np.expand_dims(image, axis=0)
 
     interpreter.set_tensor(input_details[0]["index"], image)
     interpreter.invoke()
